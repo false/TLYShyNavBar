@@ -392,7 +392,6 @@ static void * const kTLYShyNavBarManagerKVOContext = (void*)&kTLYShyNavBarManage
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-    NSLog(@"scrollView %@", NSStringFromCGPoint(scrollView.contentOffset));
     [self _handleScrolling];
 }
 
