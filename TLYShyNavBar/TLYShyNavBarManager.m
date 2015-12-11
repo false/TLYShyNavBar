@@ -127,13 +127,22 @@ static void * const kTLYShyNavBarManagerKVOContext = (void*)&kTLYShyNavBarManage
         NSLog(@"*** WARNING: Please consider using a UIViewController with a UITableView as a subview ***");
     }
     
-    UIView *navbar = viewController.navigationController.navigationBar;
+    UIView *navbar = nil;
+    if([viewController isKindOfClass:UINavigationController.class])
+    {
+        navbar = ((UINavigationController*)viewController).navigationBar;
+    }
+    else
+    {
+        navbar = viewController.navigationController.navigationBar;
+    }
+    
     NSAssert(navbar != nil, @"Please make sure the viewController is already attached to a navigation controller.");
     
     viewController.extendedLayoutIncludesOpaqueBars = YES;
 
     [self.extensionViewContainer removeFromSuperview];
-    [self.viewController.view addSubview:self.extensionViewContainer];
+    [self.viewController.view insertSubview:self.extensionViewContainer belowSubview:navbar];
     
     self.navBarController.view = navbar;
     
@@ -291,7 +300,6 @@ static void * const kTLYShyNavBarManagerKVOContext = (void*)&kTLYShyNavBarManage
         // 6 - Update the navigation bar shyViewController
         self.navBarController.fadeBehavior = self.fadeBehavior;
         
-        
         [self.navBarController updateYOffset:deltaY];
     }
     
@@ -342,9 +350,9 @@ static void * const kTLYShyNavBarManagerKVOContext = (void*)&kTLYShyNavBarManage
         bounds.origin = CGPointZero;
         
         view.frame = bounds;
-        
         self.extensionViewContainer.frame = bounds;
         [self.extensionViewContainer addSubview:view];
+
         self.extensionViewContainer.userInteractionEnabled = view.userInteractionEnabled;
 
         /* Disable scroll handling temporarily while laying out views to avoid double-changing content
@@ -366,7 +374,11 @@ static void * const kTLYShyNavBarManagerKVOContext = (void*)&kTLYShyNavBarManage
     if (fabs([self.scrollViewController updateLayoutIfNeeded:YES]) > FLT_EPSILON)
     {
         [self.navBarController expand];
-        [self.extensionViewContainer.superview bringSubviewToFront:self.extensionViewContainer];
+        
+        if(![self.viewController isKindOfClass:UINavigationController.class])
+        {
+            [self.extensionViewContainer.superview bringSubviewToFront:self.extensionViewContainer];
+        }
     }
 }
 
@@ -380,6 +392,7 @@ static void * const kTLYShyNavBarManagerKVOContext = (void*)&kTLYShyNavBarManage
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
+    NSLog(@"scrollView %@", NSStringFromCGPoint(scrollView.contentOffset));
     [self _handleScrolling];
 }
 
